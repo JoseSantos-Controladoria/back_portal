@@ -1,0 +1,8 @@
+const router = require('express-promise-router')();
+const verifyAuthorization = require('../config/middleware');
+const loginController = require('../controllers/login.controller');
+
+router.post('/login', verifyAuthorization, loginController.login);
+
+
+module.exports = router;
