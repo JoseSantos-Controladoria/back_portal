@@ -10,7 +10,7 @@ function isValidTable( cTablename ) {
   return ( aBasicTables.includes( cTablename.toLowerCase() ) );
 
 }
-
+ 
 function isTableRestrictSameName( cTablename ) {
 
   let aTablesRestrictSameName = [  'customer', 'project', 'address_type', 'state', 'country', 'pos_chain','pos_brand', 'pos_channel',
@@ -99,7 +99,7 @@ async function ListAllItems( queryparam ) {
   else if (queryparam.tablename.toLowerCase() == 'user') {
     cSelectQuery = `select 	"user".*, tb_profile.name as perfil                              
                         from portalbi.tb_user "user"
-                        left join portalbi.tb_profile on (tb_profile.id = "user".id_profile)
+                        left join portalbi.tb_profile on (tb_profile.id = "user".profile_id)
                         where 1=1 `
   }
   else if (queryparam.tablename.toLowerCase() == 'pos_brand') {
