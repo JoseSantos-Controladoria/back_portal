@@ -2,7 +2,6 @@ const db = require('../config/database.js');
 const params = require('../config/params.js');
 const crypto = require('crypto');
 
-// Função auxiliar para pegar o próximo ID (Necessário pois a tabela não é auto-incremento)
 async function getNextID() {
   try {
     const cQuery = `select (coalesce(max(id),0)+1) as id from portalbi.tb_api_access_control`;
@@ -23,12 +22,10 @@ exports.login = async (req, res) => {
   let responseSQL = null;
   let loginOK = false;
 
-  // 1. Validação Básica
   if ((request.username == undefined) || (request.password == undefined)) {
     return res.status(200).send({ status: 'ERROR', error_message: 'Usuário ou senha não informado!' });
   }
 
-  // 2. Busca o Usuário
   cQuery = `select tb_user.id, tb_user.name, tb_user.email, tb_user.active, 
                    tb_user.password, tb_user.company_id, tb_company."name" company_name,
                    tb_user.profile_id, tb_profile."name" profile_name
@@ -47,7 +44,6 @@ exports.login = async (req, res) => {
     if (usuario.password == request.password) {
       loginOK = true;
 
-      // 3. Busca Grupos
       cQuery = `select tb_group.id group_id, upper(tb_group.name) group_name
                 from portalbi.tb_group
                 join portalbi.tb_user_group on (tb_user_group.group_id = tb_group.id and tb_user_group.user_id = $1)
@@ -59,7 +55,7 @@ exports.login = async (req, res) => {
   }
 
   if (loginOK) {
-    // 4. Gera o Token e Salva
+
     let sessionToken = crypto.randomBytes(32).toString('hex');
 
     try {
