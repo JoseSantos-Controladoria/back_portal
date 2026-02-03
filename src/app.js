@@ -10,9 +10,9 @@ const login = require('./routes/login.routes');
 const basicTableRoute = require('./routes/basictable.routes');
 const userGroupRoute = require('./routes/usergroup.routes');
 const reportGroupRoute = require('./routes/reportgroup.routes');
-// const posProjectRoute = require('./routes/posproject.routes');
-// const profileFeatureRoute = require('./routes/profilefeature');
-// const dashboardRoute = require('./routes/dashboard.routes');
+const reportRoute = require('./routes/report.routes'); 
+const logRoute = require('./routes/log.routes');
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -25,10 +25,10 @@ app.use('/api/', login);
 app.use('/api/', basicTableRoute);
 app.use('/api/', userGroupRoute);
 app.use('/api/', reportGroupRoute);
-// app.use('/api/', posProjectRoute);
-// app.use('/api/', dashboardRoute);
-// app.use('/api/', profileFeatureRoute);
+app.use('/api/', reportRoute);
 
+
+app.use('/api/', logRoute);
 
 global.aTableStructure = 'teste';
 
