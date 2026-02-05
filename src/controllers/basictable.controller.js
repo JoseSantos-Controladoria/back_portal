@@ -80,14 +80,14 @@ async function ListAllItems( queryparam ) {
                         where 1=1 `
   }
   else if (queryparam.tablename.toLowerCase() == 'customer') {
-    cSelectQuery = `select  tb_customer.id,
-                            tb_customer.name,
-                            tb_customer.active,
-                            tb_customer.company_id,
+    cSelectQuery = `select  customer.id,
+                            customer.name,
+                            customer.active,
+                            customer.company_id,
                             tb_company.name company,
-                            tb_customer.last_update
-                        from portalbi.tb_customer
-                        left join portalbi.tb_company on ( tb_customer.company_id = tb_company.id )
+                            customer.last_update
+                        from portalbi.tb_customer as "customer"
+                        left join portalbi.tb_company on ( customer.company_id = tb_company.id )
                         where 1=1 `
   }
   else if (queryparam.tablename.toLowerCase() == 'project') {
