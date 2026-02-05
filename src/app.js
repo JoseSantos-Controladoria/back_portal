@@ -12,6 +12,7 @@ const userGroupRoute = require('./routes/usergroup.routes');
 const reportGroupRoute = require('./routes/reportgroup.routes');
 const reportRoute = require('./routes/report.routes'); 
 const logRoute = require('./routes/log.routes');
+const customerRoute = require('./routes/customer.routes');
 
 
 app.use(express.urlencoded({ extended: true }));
@@ -26,6 +27,7 @@ app.use('/api/', basicTableRoute);
 app.use('/api/', userGroupRoute);
 app.use('/api/', reportGroupRoute);
 app.use('/api/', reportRoute);
+app.use('/api/', customerRoute);
 
 
 app.use('/api/', logRoute);
