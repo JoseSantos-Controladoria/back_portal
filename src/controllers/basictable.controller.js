@@ -11,6 +11,7 @@ function isValidTable( cTablename ) {
 
 }
  
+
 function isTableRestrictSameName( cTablename ) {
 
   let aTablesRestrictSameName = [  'customer', 'project', 'address_type', 'state', 'country', 'pos_chain','pos_brand', 'pos_channel',
