@@ -46,9 +46,6 @@ exports.getAllItems = async (req, res) => {
 
 async function ListAllItems( queryparam ) {
 
-// ********************************************************************************************//
-  // -> Paginação          
-  // ********************************************************************************************//
   let nDefaultPageSize = await params.getDefaultParam('PAGINATION_DEFAULT_PAGE_SIZE');
   let bHasPagination = queryparam.page == undefined ? false : true;
   let nPage = queryparam.page == undefined ? 1 : parseInt(queryparam.page);
@@ -56,14 +53,8 @@ async function ListAllItems( queryparam ) {
   nDefaultPageSize = nDefaultPageSize == null ? 10 : nDefaultPageSize;
   nPageSize = nPageSize == null ? nDefaultPageSize : nPageSize;
 
-  // ********************************************************************************************//
-  // -> Contagem da quantidade de registros (input para paginação)
-  // ********************************************************************************************//
   let cCountQuery = `select count(*) as qtde_registros from portalbi.tb_${queryparam.tablename.toLowerCase()} as "${queryparam.tablename}" where 1=1 `;
 
-  // ********************************************************************************************//
-  // -> Select dos dados
-  // ********************************************************************************************//
   let cSelectQuery = ``;
   if (queryparam.tablename.toLowerCase() == 'group') {
     cSelectQuery = `select  "group".id,
@@ -112,15 +103,8 @@ async function ListAllItems( queryparam ) {
     cSelectQuery = `select * from portalbi.tb_${queryparam.tablename.toLowerCase()} as "${queryparam.tablename}" where 1=1 `;
   }
   
-
-  // ********************************************************************************************//
-  // -> Ordenação
-  // ********************************************************************************************//
   let cOrderbyQuery = queryparam.orderby == undefined ? ` ` : ` order by "${queryparam.tablename}".${queryparam.orderby}`;
 
-  // ********************************************************************************************//
-  // -> Critérios de Filtro
-  // ********************************************************************************************//
   let aParamsReq = Object.entries(queryparam);
   let nParamReq = 0;
   let cReservedParams = [ 'tablename', 'page', 'pagesize', 'orderby' ];
@@ -130,14 +114,23 @@ async function ListAllItems( queryparam ) {
   let cOperator = '';
   let cErrorMessage = '';
   let lQueryOK = true;
+
   for (nParamReq=0; nParamReq<=aParamsReq.length-1; nParamReq++) {
 
-    // Se não é um parametro reservado
     if (cReservedParams.includes(aParamsReq[nParamReq][0]) == false) {
-      cOperator = aParamsReq[nParamReq][1].match(regex)[1];
-      cValuetoSearch = aParamsReq[nParamReq][1].replace( aParamsReq[nParamReq][1].match(regex)[0], ''  );
+      
+      let strValue = String(aParamsReq[nParamReq][1]);
+      let matchResult = strValue.match(regex);
+      let cValuetoSearch = '';
 
-      // Se for um operador inválido
+      if (matchResult) {
+        cOperator = matchResult[1];
+        cValuetoSearch = strValue.replace(matchResult[0], '');
+      } else {
+        cOperator = 'equal';
+        cValuetoSearch = strValue;
+      }
+
       if (aPossibleOperators.includes(cOperator) == false) {
         lQueryOK = false;
         cErrorMessage += `[${cOperator}] is a invalid operator! List of valid operators: [${aPossibleOperators.toString()}]. `;        
@@ -158,7 +151,7 @@ async function ListAllItems( queryparam ) {
         if (cOperator == 'equal-string') { cFilterQuery += ` '${cValuetoSearch}' ` }
         else if (cOperator == 'in') { cFilterQuery += ` (${cValuetoSearch}) ` }
         else if (cOperator == 'like') { cFilterQuery += ` '%${cValuetoSearch.toUpperCase()}%' ` }
-        else { cFilterQuery += cValuetoSearch + ` ` }
+        else { cFilterQuery += ` '${cValuetoSearch}' ` }
 
       }
 
@@ -172,9 +165,6 @@ async function ListAllItems( queryparam ) {
 
   if (lQueryOK == true) {
     if (bHasPagination == true) {
-      
-      // Verifico antes a quantidade total de registros que a query irá retornar
-      // para garantir que o offset não seja maior do que a quantidade total de registros
 
       cQuery = cCountQuery + cFilterQuery;
       responseSQL = await db.query( cQuery, [] );
@@ -335,7 +325,6 @@ exports.updateItem = async (req, res) => {
 
     for (nField=0; nField<=aFields.length-1; nField++) {
 
-      // Parametro ID é a chave para alteração do registro (não deve ser alterado)
       if (aFields[nField][0].toUpperCase() == 'ID') {
         nIDItem = aFields[nField][1];
       }
@@ -393,7 +382,6 @@ exports.deleteItem = async (req, res) => {
       try {
 
         if (cTablename == 'pos') {
-          // Se for deleção de PDV, excluo os registros associados antes para permitir a exclusão
           cQuery = `delete from portalbi.tb_pos_project where id_pos = ${nIDItem};`
           responseSQL = await db.query( cQuery );
         }
@@ -406,7 +394,6 @@ exports.deleteItem = async (req, res) => {
       } catch (error) {
         console.error('Erro ao executar query: ' + cQuery, error);
 
-        // Retorna erro amigável
         res.status(500).json({
           success: false,
           message: 'Erro ao excluir o registro.',
