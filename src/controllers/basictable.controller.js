@@ -331,7 +331,7 @@ exports.updateItem = async (req, res) => {
       }
       else {
         nSeqField++
-        cFields += ` ${aFields[nField][0]} = $${nSeqField}, ` ;
+        cFields += ` "${aFields[nField][0]}" = $${nSeqField}, ` ; 
         aParamsUpdate.push( aFields[nField][1] );
       }
     }
@@ -344,6 +344,22 @@ exports.updateItem = async (req, res) => {
     else {
       cQuery = `update portalbi.tb_${req.query.tablename.toLowerCase()} set ${cFields} where id = ${nIDItem};`
       responseSQL = await db.query( cQuery, aParamsUpdate );
+
+      if (req.query.tablename.toLowerCase() === 'workspace') {
+
+        if (req.body.active === false || req.body.active === 'false') {
+            try {
+
+              await db.query(
+                `UPDATE portalbi.tb_report SET active = false, last_update = now() WHERE workspace_id = $1`, 
+                [nIDItem]
+              );
+              console.log(`[System] Workspace ${nIDItem} inativado: Relatórios vinculados foram inativados em cascata.`);
+            } catch (error) {
+              console.error('[System] Erro ao inativar relatórios em cascata:', error);
+            }
+        }
+      }
 
       if (responseSQL.rowCount <= 0) {
         res.status(200).send( { status: 'ERROR', id: nIDItem, message: `ID ${nIDItem} not found.` } );  
