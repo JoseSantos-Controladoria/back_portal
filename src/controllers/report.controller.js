@@ -26,6 +26,7 @@ exports.getReportsByUser = async (req, res) => {
       WHERE ug.user_id = $1
         AND ug.active = true
         AND r.active = true
+        AND (w.active = true OR w.active IS NULL)
       ORDER BY r.title ASC
     `;
 
