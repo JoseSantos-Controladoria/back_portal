@@ -36,10 +36,8 @@ exports.createItem = async (req, res) => {
 
     let projectsIDs = body.projects.join(',');
 
-    // Se a ação for DELETE_EXISTING_PROJECTS apago todo o histórico de projetos associados ao PDV
     cQuery = `delete from hub.tb_pos_project where id_pos = ${body.posid} `;
 
-    // Se a ação for KEEP_EXISTING_PROJECTS vou apagar somente os projetos que vieram no parametro e manter os demais
     if (action == 'KEEP_EXISTING_PROJECTS') {
       cQuery += `and id_project in (${projectsIDs})`
     }

@@ -4,7 +4,6 @@ exports.getCustomers = async (req, res) => {
   try {
     let cQuery = '';
 
-    // Query 1: Dados Agrupados (Clientes + Contagem de Relatórios)
     cQuery = `select customer_id, customer_name, sum(qty_report) qty_report
                 from (
                   select distinct tb_group.customer_id, tb_customer."name" as customer_name,

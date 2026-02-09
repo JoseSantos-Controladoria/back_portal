@@ -16,7 +16,6 @@ exports.createLog = async (req, res) => {
   try {
     let groupId = null;
 
-    // 1. Descobrir o Grupo (lógica existente)
     if (reportid) {
       const findGroupQuery = `
         SELECT ug.group_id 
@@ -62,20 +61,43 @@ exports.getAllLogs = async (req, res) => {
         l.id,
         l.created_at,
         l.action,
-        u.name as user_name,
-        u.email as user_email,
-        r.title as report_name,
-        g.name as group_name
+        
+        -- USUÁRIO
+        CASE 
+           WHEN u.name IS NULL THEN 'Usuário Removido'
+           WHEN u.active = false THEN u.name || ' (Inativo)'
+           ELSE u.name 
+        END as user_name,
+        coalesce(u.email, '-') as user_email,
+
+        -- RELATÓRIO (AQUI ESTÁ O QUE VOCÊ QUER)
+        CASE 
+           WHEN r.title IS NULL THEN 'Relatório Removido' -- Só se foi DELETADO
+           WHEN r.active = false THEN r.title || ' (Inativo)' -- Se foi INATIVADO, mostra o nome + tag
+           ELSE r.title -- Se está ATIVO, mostra só o nome
+        END as report_name,
+
+        -- GRUPO
+        CASE 
+           WHEN g.name IS NULL THEN '-'
+           WHEN g.active = false THEN g.name || ' (Inativo)'
+           ELSE g.name 
+        END as group_name
+
       FROM portalbi.tb_report_log_access l
-      INNER JOIN portalbi.tb_user u ON l.user_id = u.id
+      LEFT JOIN portalbi.tb_user u ON l.user_id = u.id
       LEFT JOIN portalbi.tb_report r ON l.report_id = r.id
-      LEFT JOIN portalbi.tb_group g  ON l.group_id = g.id
+      LEFT JOIN portalbi.tb_group g ON l.group_id = g.id
       ORDER BY l.created_at DESC
-      LIMIT 500
     `;
 
     const response = await db.query(query);
-    res.status(200).send({ status: 'SUCCESS', items: response.rows });
+
+    res.status(200).send({ 
+      status: 'SUCCESS', 
+      items: response.rows,
+      count: response.rowCount 
+    });
 
   } catch (error) {
     console.error("Erro ao buscar logs:", error);

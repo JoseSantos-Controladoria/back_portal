@@ -4,7 +4,6 @@ const cors = require('cors');
 
 const app = express();
 
-// ==> Rotas da API:
 const index = require('./routes/index');
 const login = require('./routes/login.routes');
 const basicTableRoute = require('./routes/basictable.routes');

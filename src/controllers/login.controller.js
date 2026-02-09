@@ -1,6 +1,7 @@
 const db = require('../config/database.js');
 const params = require('../config/params.js');
 const crypto = require('crypto');
+const emailService = require('../services/email.service');
 
 async function getNextID() {
   try {
@@ -87,5 +88,58 @@ exports.login = async (req, res) => {
     });
   } else {
     res.status(200).send({ status: 'ERROR', error_message: 'Usuário ou senha inválido!' });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(200).send({ status: 'ERROR', error_message: 'O e-mail é obrigatório.' });
+  }
+
+  try {
+    const userQuery = `SELECT id, name, email FROM portalbi.tb_user WHERE lower(email) = $1 AND active = true`;
+    const userRes = await db.query(userQuery, [email.toLowerCase()]);
+
+    if (userRes.rowCount > 0) {
+      const user = userRes.rows[0];
+
+      const newPassword = crypto.randomBytes(4).toString('hex');
+
+      await db.query(
+        `UPDATE portalbi.tb_user SET password = $1, last_update = now() WHERE id = $2`, 
+        [newPassword, user.id]
+      );
+
+      const mailOptions = {
+        from: process.env.EMAIL_FROM, 
+        to: user.email,
+        subject: 'Recuperação de Senha - Trade HUB',
+        html: `
+          <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2>Olá, ${user.name}</h2>
+            <p>Recebemos uma solicitação para redefinir sua senha de acesso.</p>
+            <p>Sua nova senha temporária é:</p>
+            <div style="background: #f4f4f4; padding: 15px; border-radius: 5px; font-size: 18px; font-weight: bold; display: inline-block;">
+              ${newPassword}
+            </div>
+            <p>Por favor, acesse o sistema e altere sua senha assim que possível.</p>
+            <hr/>
+            <small>Se você não solicitou isso, ignore este e-mail.</small>
+          </div>
+        `
+      };
+      await emailService.sendMail(mailOptions);
+    } 
+    else {
+      console.log(`[Segurança] Tentativa de recuperação para e-mail inexistente: ${email}`);
+    }
+
+    res.status(200).send({ status: 'SUCCESS', message: 'Nova senha enviada para o e-mail.' });
+
+  } catch (error) {
+    console.error('Erro no ForgotPassword:', error);
+    res.status(500).send({ status: 'ERROR', error_message: 'Erro interno ao processar solicitação.' });
   }
 };

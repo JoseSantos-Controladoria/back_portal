@@ -36,10 +36,8 @@ exports.createGroupsbyReport = async (req, res) => {
 
     let groupsIDs = body.groups.join(',');
 
-    // Se a ação for DELETE_EXISTING_GROUPS apago todo o histórico de grupos associados ao relatório
     cQuery = `delete from portalbi.tb_report_group where report_id = ${body.reportid} `;
 
-    // Se a ação for KEEP_EXISTING_GROUPS vou apagar somente os grupos que vieram no parametro e manter os demais
     if (action == 'KEEP_EXISTING_GROUPS') {
       cQuery += `and group_id in (${groupsIDs})`
     }

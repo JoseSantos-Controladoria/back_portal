@@ -36,10 +36,8 @@ exports.createGroupsbyUser = async (req, res) => {
 
     let groupsIDs = body.groups.join(',');
 
-    // Se a ação for DELETE_EXISTING_GROUPS apago todo o histórico de projetos associados ao Usuario
     cQuery = `delete from portalbi.tb_user_group where user_id = ${body.userid} `;
 
-    // Se a ação for KEEP_EXISTING_GROUPS vou apagar somente os projetos que vieram no parametro e manter os demais
     if (action == 'KEEP_EXISTING_GROUPS') {
       cQuery += `and group_id in (${groupsIDs})`
     }
@@ -111,10 +109,8 @@ exports.createUsersbyGroup = async (req, res) => {
 
     let usersIDs = body.users.join(',');
 
-    // Se a ação for DELETE_EXISTING_USERS apago todo o histórico de usuários associados ao grupo
     cQuery = `delete from portalbi.tb_user_group where group_id = ${body.groupid} `;
 
-    // Se a ação for KEEP_EXISTING_USERS vou apagar somente os usuarios que vieram no parametro e manter os demais
     if (action == 'KEEP_EXISTING_USERS') {
       cQuery += `and user_id in (${usersIDs})`
     }

@@ -36,10 +36,8 @@ exports.createItem = async (req, res) => {
 
     let featuresIDs = body.features.join(',');
 
-    // Se a ação for DELETE_EXISTING_FEATURES apago todo o histórico de features associadas ao perfil
     cQuery = `delete from hub.tb_profile_feature where id_profile = ${body.profileid} `;
 
-    // Se a ação for KEEP_EXISTING_FEATURES vou apagar somente as features que vieram no parametro e manter os demais
     if (action == 'KEEP_EXISTING_FEATURES') {
       cQuery += `and id_feature in (${featuresIDs})`
     }
